@@ -1,0 +1,2 @@
+# fpga-innovation-contest
+2026年FPGA创新设计竞赛奶蛙队参赛作品，基于安路EG4S20的HDMI多媒体播放系统，FPGA驱动的音视频展示系统
