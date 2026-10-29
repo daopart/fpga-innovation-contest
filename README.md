@@ -1,6 +1,6 @@
 # 基于 EG4S20 的 HDMI 多媒体播放器
 
-奶蛙队 · 安路 EG4S20BG256
+安路 EG4S20BG256
 
 ## 1. 项目概况
 
@@ -16,7 +16,7 @@
 
 音频方面，TF 卡根目录下的 WAV 会被流式读出，通过 I2S 送进 HDMI，支持 48 kHz、16 位、单声道的 PCM。播放时右上角有一个 16 段的频谱柱状图，数据来自 I2S 回环采样。
 
-还没出图的时候，屏幕显示一段开机动画：夜空、落日、网格地面，中间是队名“奶蛙队”，底部有进度条。
+还没出图的时候，屏幕显示赛事视觉和一条进度条，进度条约 6.7 秒走满。上电画面的效果见 `doc/boot_preview.png`。
 
 ## 3. 整体结构
 
@@ -122,13 +122,14 @@ TD 只在打开工程时读 `integration.al`，退出时会按内存里的文件
 
 | 资源 | 占用 | 总量 | 比例 |
 |---|---|---|---|
-| LUT | 11969 | 19600 | 61.1% |
-| 寄存器 | 6757 | 19600 | 34.5% |
-| BRAM | 28 | 64 | 43.8% |
-| DSP | 17 | 29 | 58.6% |
-| Slice | 6785 | — | 69.2% |
+| LUT | 11396 | 19600 | 58.1% |
+| 寄存器 | 6716 | 19600 | 34.3% |
+| BRAM9K | 28 | 64 | 43.8% |
+| BRAM32K | 2 | 16 | 12.5% |
+| DSP | 12 | 29 | 41.4% |
+| Slice | 6752 | — | 68.9% |
 
-PLL 用了 3 个，IO 用了 35 个。
+PLL 用了 3 个，IO 用了 35 个。开机画面的赛事视觉存在 `boot_logo_rom.v` 里，是 320×112 的 1bpp 点阵，显示时 2 倍放大到 640×224。
 
 `src/user_source/hdl_source/test/` 下留了各模块的 testbench，覆盖缩放、转场、字幕、亮度对比度与 OSD、按键手势、音频波形、WAV 头解析和多曲目切换。开发阶段这些 testbench 在 ModelSim 下逐项比对过：缩放按像素检查，字幕按页检查黑条范围和字模位置，WAV 用假卡验证文件头、样点顺序和切歌不串台。具体用例可以直接看 `tb_*.v` 里的 `$display` 和断言。
 
@@ -159,14 +160,20 @@ NaiWa_HDMI_Player/
 ├─ README.md                  本说明
 ├─ integration.bit            最新位流
 ├─ demo/                      TF 卡演示素材（4 张 BMP + 1 首 WAV）
-├─ doc/                       翻转和频谱的示意预览图
+├─ doc/                       上电画面、翻转和频谱预览图
 ├─ src/
 │  ├─ td_project/
 │  │  ├─ integration.al       TD 工程文件
 │  │  └─ al_ip/               PLL IP
 │  └─ user_source/
 │     ├─ constraints_source/  引脚、时序、EDID 约束
-│     └─ hdl_source/          Verilog 源码与 testbench
+│     └─ hdl_source/
+│        ├─ time/             视频处理、字幕、按键与开机画面
+│        ├─ time2/            音频、HDMI 与顶层
+│        ├─ SD/               TF 卡、SDRAM 与数码管
+│        ├─ include/          SDRAM 底层定义
+│        ├─ IP/               FIFO / PLL IP
+│        └─ test/             testbench
 └─ tools/                     辅助脚本，不参与综合
 ```
 
